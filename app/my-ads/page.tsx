@@ -14,6 +14,7 @@ interface Ad {
   title: string;
   description: string;
   price: number;
+  images?: string[]; 
 }
 
 export default function MyAds() {
@@ -30,7 +31,6 @@ export default function MyAds() {
       return;
     }
 
-    // ZDE JE ZÁSADNÍ ZMĚNA: Hledáme v tabulce "items" podle sloupce "user_id"
     const { data, error } = await supabase
       .from("items")
       .select("*")
@@ -53,7 +53,6 @@ export default function MyAds() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    // Přidáno window. před confirm (dobrá praxe v Next.js)
     const confirmation = window.confirm("Opravdu chcete smazat tento inzerát?");
     if (!confirmation) return;
 
@@ -63,15 +62,9 @@ export default function MyAds() {
         console.error("Chyba od Supabase:", error);
         alert("Chyba při mazání inzerátu.");
     } else {
-        // Tohle okamžitě schová inzerát z obrazovky bez nutnosti refreshe stránky!
         setAds((prev: Ad[]) => prev.filter((item: Ad) => item.id !== id.toString()));
         alert("Inzerát byl úspěšně smazán.");
     }
-};
-
-  // Funkce pro úpravu (zatím jen přesměruje na stránku editace)
-  const handleEdit = (id: string) => {
-    router.push(`/edit-ad/${id}`);
   };
 
   return (
@@ -100,28 +93,48 @@ export default function MyAds() {
             {ads.map((ad) => (
               <li
                 key={ad.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex flex-col"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col overflow-hidden"
               >
-                <div className="grow">
-                  <h2 className="text-lg font-bold">{ad.title}</h2>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">{ad.description}</p>
-                  <p className="text-xl font-semibold mt-3 text-blue-600 dark:text-blue-400">{ad.price} Kč</p>
-                </div>
-                
-                {/* Tlačítka pro úpravu a mazání */}
-                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => router.push(`/edit-ad/${ad.id}`)}
-                    className="flex-1 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 transition"
-                  >
-                    Upravit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(ad.id.toString())}
-                    className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
-                  >
-                    Smazat
-                  </button>
+                {ad.images && ad.images.length > 0 ? (
+                  <div className="w-full h-48 relative bg-gray-200 dark:bg-gray-700">
+                    <img
+                      src={ad.images[0]}
+                      alt={ad.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {ad.images.length > 1 && (
+                      <span className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                        +{ad.images.length - 1} fotek
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <span className="text-gray-500 dark:text-gray-400">Bez obrázku</span>
+                  </div>
+                )}
+
+                <div className="p-4 flex flex-col grow">
+                  <div className="grow">
+                    <h2 className="text-lg font-bold">{ad.title}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1 line-clamp-3">{ad.description}</p>
+                    <p className="text-xl font-semibold mt-3 text-blue-600 dark:text-blue-400">{ad.price} Kč</p>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => router.push(`/edit-ad/${ad.id}`)}
+                      className="flex-1 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 transition"
+                    >
+                      Upravit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(ad.id.toString())}
+                      className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
+                    >
+                      Smazat
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}

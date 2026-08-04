@@ -17,16 +17,14 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Reset chybové zprávy
+    setError("");
 
-    // Validace vstupů
     if (!email.trim() || !password.trim()) {
       setError("Vyplňte prosím všechny údaje.");
       return;
     }
 
     try {
-      // Přihlášení uživatele pomocí Supabase
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -35,7 +33,7 @@ export default function LoginPage() {
       if (error) {
         setError("Neplatné přihlašovací údaje. Zkontrolujte e-mail a heslo.");
       } else {
-        router.push("/"); // Přesměrování na hlavní stránku po úspěšném přihlášení
+        router.push("/");
       }
     } catch (err) {
       console.error("Chyba při přihlášení:", err);

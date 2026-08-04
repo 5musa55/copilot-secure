@@ -18,9 +18,8 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Reset chybové zprávy
+    setError("");
 
-    // Validace vstupů
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
       setError("Vyplňte prosím všechny údaje.");
       return;
@@ -35,7 +34,6 @@ export default function RegisterPage() {
     }
 
     try {
-      // Registrace uživatele pomocí Supabase
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
@@ -44,7 +42,7 @@ export default function RegisterPage() {
       if (error) {
         setError("Registrace se nezdařila. Zkuste to prosím znovu.");
       } else {
-        router.push("/login"); // Přesměrování na přihlašovací stránku
+        router.push("/login");
       }
     } catch (err) {
       console.error("Chyba při registraci:", err);
