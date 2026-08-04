@@ -32,7 +32,7 @@ export default function MyAds() {
 
     // ZDE JE ZÁSADNÍ ZMĚNA: Hledáme v tabulce "items" podle sloupce "user_id"
     const { data, error } = await supabase
-      .from("ads")
+      .from("items")
       .select("*")
       .eq("user_id", user.id);
 
@@ -57,7 +57,7 @@ export default function MyAds() {
     const confirmation = window.confirm("Opravdu chcete smazat tento inzerát?");
     if (!confirmation) return;
 
-    const { error } = await supabase.from("ads").delete().eq("id", id.toString());
+    const { error } = await supabase.from("items").delete().eq("id", id.toString());
     
     if (error) {
         console.error("Chyba od Supabase:", error);

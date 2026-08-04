@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-// 1. ZDE NAHRAĎTE createClient IMPORTEM VAŠEHO CENTRALIZOVANÉHO KLIENTA!
-// např.: import { supabase } from "@/utils/supabase";
 import { createClient } from "@supabase/supabase-js"; 
 
-// Pouze dočasně, pokud ještě nemáte supabase importovaný z utils:
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// 2. OPRAVA: Next.js posílá `params`, nikoliv `adId`
 export default function EditAd({ params }: { params: Promise<{ id: string }> }) {
     const [adId, setAdId] = useState<string | null>(null);
     const [title, setTitle] = useState("");
@@ -21,20 +17,18 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
     const [error, setError] = useState("");
     const router = useRouter();
 
-    // 3. Rozbalení ID z parametrů URL adresy
     useEffect(() => {
         params.then((resolvedParams) => {
             setAdId(resolvedParams.id);
         });
     }, [params]);
 
-    // 4. Načtení dat se spustí, až když máme adId
     useEffect(() => {
         if (!adId) return;
 
         const fetchAd = async () => {
             const { data, error } = await supabase
-                .from("ads")
+                .from("items")
                 .select("*")
                 .eq("id", adId)
                 .single();
@@ -51,7 +45,7 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
         fetchAd();
     }, [adId]);
 
-    const handleEditAd = async (e: React.FormEvent) => {
+    const handleEditAd = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(""); 
 
@@ -59,26 +53,27 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
             setError("Vyplňte prosím všechny údaje.");
             return;
         }
-        if (isNaN(Number(price)) || Number(price) <= 0) {
+        const priceValue = Number(price);
+        if (isNaN(priceValue) || priceValue <= 0) {
             setError("Cena musí být kladné číslo.");
             return;
         }
 
         try {
             const { error: updateError } = await supabase
-                .from("ads")
+                .from("items")
                 .update({
                     title: title.trim(),
-                    price: Number(price),
+                    price: priceValue,
                     description: description.trim(),
                 })
-                .eq("id", adId);
+                .eq("id", Number(adId));
 
             if (updateError) {
                 setError("Nepodařilo se upravit inzerát. Zkuste to prosím znovu.");
             } else {
                 router.push("/my-ads");
-                router.refresh(); // Volitelně: vynutí obnovení dat na předchozí stránce
+                router.refresh();
             }
         } catch (err) {
             console.error("Chyba při úpravě inzerátu:", err);
@@ -94,16 +89,12 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
                 </h1>
                 {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                 
-                {/* Malý vylepšovák: Ukážeme "Načítám", dokud nemáme ID */}
                 {!adId ? (
                     <p className="text-center text-gray-500">Načítám data...</p>
                 ) : (
                     <form onSubmit={handleEditAd} className="space-y-4">
                         <div>
-                            <label
-                                htmlFor="title"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Název
                             </label>
                             <input
@@ -117,10 +108,7 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
                             />
                         </div>
                         <div>
-                            <label
-                                htmlFor="price"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                            <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Cena
                             </label>
                             <input
@@ -134,10 +122,7 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
                             />
                         </div>
                         <div>
-                            <label
-                                htmlFor="description"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Popis
                             </label>
                             <textarea
@@ -161,3 +146,4 @@ export default function EditAd({ params }: { params: Promise<{ id: string }> }) 
         </div>
     );
 }
+

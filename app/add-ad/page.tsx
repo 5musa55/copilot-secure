@@ -38,7 +38,7 @@ export default function AddAd() {
       }
 
       // Přidání inzerátu do databáze
-      const { error } = await supabase.from("ads").insert([
+      const { error } = await supabase.from("items").insert([
         {
           title: title.trim(),
           price: Number(price),
