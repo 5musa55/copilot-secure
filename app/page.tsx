@@ -10,7 +10,7 @@ const supabase = createClient(
 
 export default function Page() {
   const [user, setUser] = useState<{ email: string } | null>(null);
-  const [items, setItems] = useState<any[]>([]); // Záměrně any pro odstranění chyb s typy
+  const [items, setItems] = useState<any[]>([]); 
   const [searchQuery, setSearchQuery] = useState("");
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
@@ -21,7 +21,7 @@ export default function Page() {
       setUser(authData?.user ? { email: authData.user.email || "" } : null);
 
       // 2. Načtení inzerátů
-      const { data, error } = await supabase.from("ads").select("*");
+      const { data, error } = await supabase.from("items").select("*");
       
       // Uložení toho, co reálně přišlo, do žlutého boxu
       setDebugInfo({ error, itemCount: data?.length, data });
