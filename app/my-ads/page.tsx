@@ -52,37 +52,22 @@ export default function MyAds() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Funkce pro smazání inzerátu
   const handleDelete = async (id: string) => {
-      const confirmDelete = window.confirm("Opravdu chcete tento inzerát smazat?");
-      if (!confirmDelete) return;
-  
-      // Check if the ad exists before attempting to delete
-      const { data: existingAd, error: fetchError } = await supabase
-        .from("ads")
-        .select("id")
-        .eq("id", id)
-        .single();
-  
-      if (fetchError || !existingAd) {
-        alert("Inzerát nebyl nalezen.");
-        return;
-      }
-  
-      const { error } = await supabase
-        .from("ads")
-        .delete()
-        .eq("id", id);
+    // Přidáno window. před confirm (dobrá praxe v Next.js)
+    const confirmation = window.confirm("Opravdu chcete smazat tento inzerát?");
+    if (!confirmation) return;
+
+    const { error } = await supabase.from("ads").delete().eq("id", id.toString());
     
-      if (error) {
-        // Vypíšeme do konzole kompletní detail chyby z Postgresu
-        console.error("Detail chyby při mazání:", error);
-        alert(`Inzerát nejde smazat: ${error.message}`);
-      } else {
-        // Po úspěšném smazání znova načteme seznam
-        fetchAds();
-      }
-    };
+    if (error) {
+        console.error("Chyba od Supabase:", error);
+        alert("Chyba při mazání inzerátu.");
+    } else {
+        // Tohle okamžitě schová inzerát z obrazovky bez nutnosti refreshe stránky!
+        setAds((prev: Ad[]) => prev.filter((item: Ad) => item.id !== id.toString()));
+        alert("Inzerát byl úspěšně smazán.");
+    }
+};
 
   // Funkce pro úpravu (zatím jen přesměruje na stránku editace)
   const handleEdit = (id: string) => {
@@ -126,13 +111,13 @@ export default function MyAds() {
                 {/* Tlačítka pro úpravu a mazání */}
                 <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
-                    onClick={() => handleEdit(ad.id)}
+                    onClick={() => router.push(`/edit-ad/${ad.id}`)}
                     className="flex-1 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600 transition"
                   >
                     Upravit
                   </button>
                   <button
-                    onClick={() => handleDelete(ad.id)}
+                    onClick={() => handleDelete(ad.id.toString())}
                     className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
                   >
                     Smazat
